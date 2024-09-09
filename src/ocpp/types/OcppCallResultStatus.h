@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ocpp {
+namespace ocpp::types {
 
 enum class OcppCallResultStatus {
     // Common status values
@@ -29,4 +29,4 @@ enum class OcppCallResultStatus {
     ConcurrentTx            // IdTag is already used in another transaction
 };
 
-} // namespace ocpp
+} // namespace ocpp::types

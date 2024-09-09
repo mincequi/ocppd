@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ocpp {
+namespace ocpp::types {
 
 enum class OcppCallStatus {
     // For StatusNotification
@@ -27,4 +27,4 @@ enum class OcppCallStatus {
     InstallFailed   // FirmwareStatusNotification: Firmware installation failed
 };
 
-} // namespace ocpp
+} // namespace ocpp::types

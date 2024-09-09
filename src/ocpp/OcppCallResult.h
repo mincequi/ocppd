@@ -3,18 +3,19 @@
 #include <map>
 #include <optional>
 #include <string>
-#include <variant>
 
-#include <ocpp/OcppCall.h>
-#include <ocpp/OcppCallResultPayloadKey.h>
+#include <nlohmann/json.hpp>
+
+#include <ocpp/types/OcppCallResultPayloadKey.h>
 
 namespace ocpp {
 
 struct OcppCallResult {
-    using Payload = std::map<OcppCallResultPayloadKey, std::variant<std::string, int>>;
+    using Payload = std::map<types::OcppCallResultPayloadKey, nlohmann::json>;
 
     const std::string id;
     const Payload payload;
+    const void* userData = nullptr;
 
     static std::optional<OcppCallResult> fromBuffer(const std::string& message);
 

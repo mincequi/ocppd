@@ -1,20 +1,38 @@
 add_library(ocpp STATIC
-  OcppActionHandler.h
-  OcppActionType.h
+  OcppCallHandler.h
   OcppCall.cpp
-  OcppCallPayloadKey.h
-  OcppCallResultPayloadKey.h
-  OcppCallResultStatus.h
   OcppCallResult.h
   OcppCallResult.cpp
   OcppCallResultGenerator.h
   OcppCallResultGenerator.cpp
   OcppMessageParser.cpp
-  OcppMessageType.h
   action/OcppAction.cpp
   action/OcppAction.h
   action/OcppActionBootNotification.h
   action/OcppActionBootNotification.cpp
+  calls/OcppMeterValues.h
+  calls/OcppMeterValues.cpp
+  types/OcppActionCentralSystem.h
+  types/OcppActionChargePoint.h
+  types/OcppCallPayload.h
+  types/OcppCallPayloadKey.h
+  types/OcppCallResultPayloadKey.h
+  types/OcppCallResultStatus.h
+  types/OcppChargingProfile.h
+  types/OcppChargingProfile.cpp
+  types/OcppConfiguration.h
+  types/OcppMeasurand.h
+  types/OcppMessage.h
+  types/OcppMessageType.h
+  types/OcppMeterValue.h
+  types/OcppMeterValue.cpp
+  types/OcppSampledValue.h
+  types/OcppSampledValue.cpp
+  utils/chrono.h
+  utils/chrono.cpp
+  types/OcppConfigurationKey.h
+  OcppWebSocketService.h
+  OcppWebSocketService.cpp
 )
 
 target_include_directories(ocpp

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <mutex>
 #include <unordered_set>
 
@@ -16,7 +17,9 @@ public:
     void add(crow::websocket::connection* conn);
     void remove(crow::websocket::connection* conn);
 
-    void broadcast(const ChargePoints& chargePoints);
+    template <typename T>
+    void send(const std::map<std::string, T>&,
+              crow::websocket::connection* conn = nullptr);
 
 private:
     std::mutex _mutex;

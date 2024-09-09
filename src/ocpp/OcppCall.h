@@ -1,26 +1,19 @@
 #pragma once
 
-#include <any>
-#include <map>
-#include <optional>
 #include <string>
 
-#include <nlohmann/json.hpp>
-
-#include <ocpp/OcppActionType.h>
-#include <ocpp/OcppCallPayloadKey.h>
-#include <ocpp/OcppCallStatus.h>
-#include <ocpp/OcppMessageType.h>
+#include <ocpp/types/OcppMessageType.h>
+#include <ocpp/types/OcppCallPayload.h>
 
 namespace ocpp {
 
-struct OcppCall {
-    using Payload = std::map<OcppCallPayloadKey, nlohmann::json>;
-
-    const OcppMessageType type;
+template<typename T>
+class OcppCall {
+public:
+    const types::OcppMessageType type;
     const std::string id;
-    const OcppActionType action;
-    const Payload payload;
+    const T action;
+    const types::OcppCallPayload payload;
 
     std::string toBuffer() const;
 };

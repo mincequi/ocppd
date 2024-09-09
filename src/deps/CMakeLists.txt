@@ -1,4 +1,5 @@
-CPMAddPackage("gh:CrowCpp/Crow@1.2.0")
+#CPMAddPackage("gh:CrowCpp/Crow@1.2.0")
+CPMAddPackage("gh:CrowCpp/Crow#a9e7b73")
 CPMAddPackage("gh:Neargye/magic_enum@0.9.6")
 CPMAddPackage("gh:nlohmann/json@3.11.3")
 CPMAddPackage("gh:victimsnino/ReactivePlusPlus@2.1.1")

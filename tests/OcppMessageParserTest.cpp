@@ -2,6 +2,7 @@
 
 #include <ocpp/OcppCall.h>
 #include <ocpp/OcppMessageParser.h>
+#include <ocpp/types/OcppActionChargePoint.h>
 
 const std::string message = R"([2,"531531554","MeterValues",
     {"connectorId":1,
@@ -51,5 +52,5 @@ using namespace ocpp;
 TEST_CASE("Simple arithmetic") {
     OcppMessageParser parser;
     auto result = parser.parse(message);
-    REQUIRE(std::holds_alternative<OcppCall>(result));
+    REQUIRE(std::holds_alternative<OcppCall<types::OcppActionChargePoint>>(result));
 }

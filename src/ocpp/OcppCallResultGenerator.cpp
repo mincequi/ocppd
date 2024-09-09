@@ -6,24 +6,33 @@
 #include <iomanip>
 #include <sstream>
 
-#include <ocpp/OcppCallResultPayloadKey.h>
-#include <ocpp/OcppCallResultStatus.h>
+#include <ocpp/types/OcppCallResultPayloadKey.h>
+#include <ocpp/types/OcppCallResultStatus.h>
 
 namespace ocpp {
 
+using namespace types;
+using json = nlohmann::json;
+
 OcppCallResultGenerator::OcppCallResultGenerator() {}
 
-OcppCallResult OcppCallResultGenerator::generate(const OcppCall& call) {
+OcppCallResult OcppCallResultGenerator::generate(const OcppCall<OcppActionChargePoint>& call) {
     OcppCallResult::Payload payload;
 
     switch (call.action) {
-    case OcppActionType::BootNotification:
+    case OcppActionChargePoint::BootNotification:
         payload[OcppCallResultPayloadKey::status] = (std::string)magic_enum::enum_name(OcppCallResultStatus::Accepted);
         payload[OcppCallResultPayloadKey::currentTime] = now();
-        payload[OcppCallResultPayloadKey::heartbeatInterval] = 60;
+        payload[OcppCallResultPayloadKey::interval] = 60;
         break;
-    case OcppActionType::Heartbeat:
+    case OcppActionChargePoint::Heartbeat:
         payload[OcppCallResultPayloadKey::currentTime] = now();
+        break;
+    case OcppActionChargePoint::StartTransaction:
+        payload[OcppCallResultPayloadKey::transactionId] = rand() % 1000000;
+        payload[OcppCallResultPayloadKey::idTagInfo] = json{
+            {"status", "Accepted"},
+        };
         break;
     }
 

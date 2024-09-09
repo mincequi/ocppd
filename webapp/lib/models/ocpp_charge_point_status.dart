@@ -1,5 +1,5 @@
 // Keep this in sync with the server-side enum
-enum ChargePointStatus {
+enum OcppChargePointStatus {
   // For StatusNotification
   Available, // The connector is available for use
   Occupied, // The connector is currently in use

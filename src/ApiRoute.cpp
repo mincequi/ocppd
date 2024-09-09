@@ -3,75 +3,105 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include <ocpp/types/OcppActionCentralSystem.h>
+
 #include "ChargePointRepository.h"
+#include "utils/log.h"
 
 using json = nlohmann::json;
+using namespace ocpp::types;
 
 ApiRoute::ApiRoute(crow::SimpleApp& app,
-                 ChargePointRepository& chargePoints)
+                   ChargePointRepository& chargePoints)
     : _app(app),
       _chargePoints(chargePoints) {
     CROW_WEBSOCKET_ROUTE(_app, "/api")
         .onopen([&](crow::websocket::connection& conn) {
-            CROW_LOG_INFO << "api> " << conn.get_remote_ip() << "> new client";
+            info << conn.get_remote_ip() << "> new client";
             _apiClients.add(&conn);
-            sendChargePoints(conn);
+            _apiClients.send(_chargePoints.chargePoints(), &conn);
         })
-        .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
-            CROW_LOG_INFO << "api> " << conn.get_remote_ip() << "> client closed: " << reason;
+        .onclose([&](crow::websocket::connection& conn, const std::string& reason, uint16_t) {
+            info << "client closed: " << reason;
             _apiClients.remove(&conn);
         })
-        .onmessage([&](crow::websocket::connection& conn, const std::string& data, bool is_binary) {
+        // message from API client shall be connection agnostic
+        .onmessage([&](crow::websocket::connection&, const std::string& data, bool is_binary) {
             if (!is_binary) {
-                CROW_LOG_WARNING << "api> " << conn.get_remote_ip() << "> unexpected string message";
-                return;
+                return onAction(data);
             }
 
-            CROW_LOG_INFO << "api> " << conn.get_remote_ip() << "> received bytes: " << data.size();
-
-            // Decode from CBOR
-            json j = json::from_cbor(data.begin(), data.end());
-            for (const auto& cp : j.items()) {
-                for (const auto& prop : cp.value().items()) {
-                    const auto key = static_cast<PropertyKey>(std::stoi(prop.key()));
-                    switch (prop.value().type()) {
-                        case json::value_t::string:
-                            CROW_LOG_INFO << "api> " << cp.key() << "> " << magic_enum::enum_name(key) << ": " << prop.value();
-                            _chargePoints.setPropertiesById(cp.key(), {{key, prop.value().get<std::string>()}});
-                            break;
-                        case json::value_t::number_integer:
-                            CROW_LOG_INFO << "api> " << cp.key() << "> " << magic_enum::enum_name(key) << ": " << prop.value();
-                            _chargePoints.setPropertiesById(cp.key(), {{key, prop.value().get<int>()}});
-                            break;
-                        default:
-                            CROW_LOG_WARNING << "api> " << cp.key() << "> unexpected property value type> " << magic_enum::enum_name(key) << prop.value();
-                            break;
-                    }
-                }
-            }
+            info << "received " << data.size() << " bytes";
+            return onProperty(data);
         })
-        .onerror([](crow::websocket::connection& conn, const std::string& data) {
-            CROW_LOG_ERROR << "api> " << conn.get_remote_ip() << "> error: " << data;
+        .onerror([&](crow::websocket::connection& conn, const std::string& data) {
+            error << "error: " << data;
+            _apiClients.remove(&conn);
         });
 
-    _chargePoints.chargePointsObservable().subscribe([&](const ChargePoints& chargePoints) {
-        _apiClients.broadcast(chargePoints);
+    _chargePoints.propertiesObservable().subscribe([&](const std::map<std::string, Properties>& properties) {
+        _apiClients.send(properties);
+    });
+    _chargePoints.configurationObservable().subscribe([&](const std::map<std::string, OcppConfiguration>& configuration) {
+        _apiClients.send(configuration);
     });
 }
 
-void ApiRoute::sendChargePoints(crow::websocket::connection& conn) {
-    // Encode to CBOR
-    json j;
-    for (const auto& cp : _chargePoints.chargePoints()) {
-        for (const auto& prop : cp.second) {
-            std::visit([&](auto&& arg) {
-                using T = std::decay_t<decltype(arg)>;
-                j[cp.first][std::to_string(magic_enum::enum_integer(prop.first))] = arg;
-            }, prop.second);
-        }
+void ApiRoute::onAction(const std::string& data) {
+    json j = json::parse(data);
+    if (!j.is_array() || j.size() != 4) {
+        warning << "api> unexpected message: " << data;
+        return;
     }
 
-    CROW_LOG_INFO << "api> " << conn.get_remote_ip() << "> sending charge points: " << j.dump();
-    const auto buffer = json::to_cbor(j);
-    conn.send_binary({buffer.begin(), buffer.end()});
+    auto action = magic_enum::enum_cast<OcppActionCentralSystem>(j[0]);
+    if (!action.has_value()) {
+        warning << "api> unknown action: " << data;
+        return;
+    }
+
+    switch (action.value()) {
+    case OcppActionCentralSystem::TriggerMessage:
+        info << "api> action: " << data;
+        _chargePoints.triggerMeterValues();
+        break;
+    case OcppActionCentralSystem::ChangeConfiguration: {
+        auto key = magic_enum::enum_cast<OcppConfigurationKey>(j[2]);
+        if (!key.has_value()) {
+            warning << "api> unknown configuration key: " << j[2];
+            return;
+        }
+        info << "api> action: " << data;
+        // TODO
+        //_chargePoints.changeConfigurationById(j[1], key.value(), j[3]);
+        break;
+    }
+    default:
+        warning << "api> unhandled action: " << data;
+        break;
+    }
+}
+
+void ApiRoute::onProperty(const std::string& data) {
+    // Decode from CBOR
+    json j = json::from_cbor(data.begin(), data.end());
+    for (const auto& cp : j.items()) {
+        for (const auto& prop : cp.value().items()) {
+            const auto key = static_cast<PropertyKey>(std::stoi(prop.key()));
+            switch (prop.value().type()) {
+            case json::value_t::string:
+                info << cp.key() << "> " << magic_enum::enum_name(key) << ": " << prop.value();
+                _chargePoints.setPropertiesById(cp.key(), {{key, prop.value().get<std::string>()}});
+                break;
+            case json::value_t::number_integer:
+            case json::value_t::number_unsigned:
+                info << cp.key() << "> " << magic_enum::enum_name(key) << ": " << prop.value();
+                _chargePoints.setPropertiesById(cp.key(), {{key, prop.value().get<int>()}});
+                break;
+            default:
+                warning << cp.key() << "> unexpected property type> " << magic_enum::enum_name(prop.value().type());
+                break;
+            }
+        }
+    }
 }

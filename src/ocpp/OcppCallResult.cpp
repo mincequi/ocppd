@@ -7,11 +7,13 @@
 #include <crow/json.h>
 #include <magic_enum.hpp>
 
-#include <ocpp/OcppCallResultPayloadKey.h>
-#include <ocpp/OcppCallResultStatus.h>
-#include <ocpp/OcppMessageType.h>
+#include <ocpp/types/OcppCallResultPayloadKey.h>
+#include <ocpp/types/OcppCallResultStatus.h>
+#include <ocpp/types/OcppMessageType.h>
 
 using namespace crow::json;
+using namespace ocpp::types;
+using json = nlohmann::json;
 
 namespace ocpp {
 
@@ -45,13 +47,11 @@ std::optional<OcppCallResult> OcppCallResult::fromBuffer(const std::string& mess
 }
 
 std::string OcppCallResult::toBuffer() const {
-    wvalue::object convertedPayload;
+    json convertedPayload;
     for (const auto& kv : payload) {
-        std::visit([&](const auto& value) {
-            convertedPayload[std::string(magic_enum::enum_name(kv.first))] = value;
-        }, kv.second);
+        convertedPayload[std::string(magic_enum::enum_name(kv.first))] = kv.second;
     }
-    return wvalue({(int)OcppMessageType::CallResult, id, convertedPayload}).dump();
+    return json({(int)OcppMessageType::CallResult, id, convertedPayload}).dump();
 }
 
 } // namespace ocpp

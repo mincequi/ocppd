@@ -12,7 +12,8 @@ public:
             ChargePointRepository& chargePoints);
 
 private:
-    void sendChargePoints(crow::websocket::connection& conn);
+    void onAction(const std::string& data);
+    void onProperty(const std::string& data);
 
     crow::SimpleApp& _app;
     ChargePointRepository& _chargePoints;

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ocpp {
+namespace ocpp::types {
 
 enum class OcppMessageType {
     Call = 2,
@@ -8,4 +8,4 @@ enum class OcppMessageType {
     CallError = 4
 };
 
-} // namespace ocpp
+} // namespace ocpp::types

@@ -6,31 +6,32 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include <ocpp/OcppActionType.h>
 #include <ocpp/OcppCall.h>
 #include <ocpp/OcppCallResult.h>
-#include <ocpp/action/OcppAction.h>
+#include <ocpp/calls/OcppMeterValues.h>
+#include <ocpp/types/OcppActionChargePoint.h>
+#include <ocpp/types/OcppMessage.h>
+#include <ocpp/types/OcppCallPayload.h>
 
 namespace ocpp {
 
 class OcppMessageParser {
 public:
-    using ActionCallback = std::function<bool(const std::string& ip, const OcppCall::Payload& payload)>;
-    using OcppMessage = std::variant<OcppCall, OcppCallResult, std::nullopt_t>;
+    using ActionCallback = std::function<bool(const std::string& ip, const types::OcppCallPayload& payload)>;
 
     OcppMessageParser();
 
-    OcppMessage parse(const std::string& message);
+    types::OcppMessage parse(const std::string& message);
 
     const std::string& lastError() const;
 
-    void registerAction(OcppActionType action, ActionCallback callback);
+    void registerAction(types::OcppActionChargePoint action, ActionCallback callback);
 
 private:
-    std::optional<OcppCall> parseCall(nlohmann::json& json);
+    types::OcppMessage parseCall(nlohmann::json& json);
     std::optional<OcppCallResult> parseCallResult(nlohmann::json& json);
     std::string _lastError;
-    std::map<OcppActionType, ActionCallback> _actions;
+    std::map<types::OcppActionChargePoint, ActionCallback> _actions;
 };
 
 } // namespace ocpp

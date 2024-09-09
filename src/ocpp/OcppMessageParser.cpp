@@ -3,17 +3,22 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
-#include "OcppActionType.h"
-#include "OcppMessageType.h"
+#include "calls/OcppMeterValues.h"
+#include "types/OcppActionChargePoint.h"
+#include "types/OcppMessageType.h"
 
 using json = nlohmann::json;
+using namespace ocpp::types;
 
 namespace ocpp {
+
+using namespace calls;
+using namespace types;
 
 OcppMessageParser::OcppMessageParser() {
 }
 
-OcppMessageParser::OcppMessage OcppMessageParser::parse(const std::string& message) {
+OcppMessage OcppMessageParser::parse(const std::string& message) {
     _lastError.clear();
     json data = json::parse(message);
     if (!data.is_array()) {
@@ -21,8 +26,9 @@ OcppMessageParser::OcppMessage OcppMessageParser::parse(const std::string& messa
     }
 
     const auto call = parseCall(data);
-    if (call.has_value()) {
-        return call.value();
+    // Check if call holds alternative nullptr_t
+    if (!std::holds_alternative<std::nullopt_t>(call)) {
+        return call;
     }
 
     const auto callResult = parseCallResult(data);
@@ -38,11 +44,11 @@ const std::string& OcppMessageParser::lastError() const {
     return _lastError;
 }
 
-void OcppMessageParser::registerAction(OcppActionType action, ActionCallback callback) {
+void OcppMessageParser::registerAction(OcppActionChargePoint action, ActionCallback callback) {
     _actions[action] = callback;
 }
 
-std::optional<OcppCall> OcppMessageParser::parseCall(json& array) {
+OcppMessage OcppMessageParser::parseCall(json& array) {
     if (array.size() != 4) {
         return std::nullopt;
     }
@@ -59,12 +65,12 @@ std::optional<OcppCall> OcppMessageParser::parseCall(json& array) {
         return std::nullopt;
     }
     const auto id = array[1].get<std::string>();
-    const auto action = magic_enum::enum_cast<OcppActionType>((std::string)array[2]);
+    const auto action = magic_enum::enum_cast<OcppActionChargePoint>((std::string)array[2]);
     if (!action.has_value()) {
         return std::nullopt;
     }
 
-    OcppCall::Payload convertedPayload;
+    OcppCallPayload convertedPayload;
     for (const auto& it : array[3].items()) {
         const auto keyEnum = magic_enum::enum_cast<OcppCallPayloadKey>(it.key());
         if (!keyEnum.has_value()) {
@@ -73,7 +79,20 @@ std::optional<OcppCall> OcppMessageParser::parseCall(json& array) {
         convertedPayload[keyEnum.value()] = it.value();
     }
 
-    return OcppCall{type.value(), id, action.value(), convertedPayload};
+    auto baseCall = OcppCall<OcppActionChargePoint>{type.value(), id, action.value(), convertedPayload};
+    switch (action.value()) {
+    case OcppActionChargePoint::MeterValues: {
+        auto call = OcppMeterValues::fromCall(baseCall);
+        if (call.has_value()) {
+            return call.value();
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    return baseCall;
 }
 
 std::optional<OcppCallResult> OcppMessageParser::parseCallResult(json& list) {
@@ -97,7 +116,7 @@ std::optional<OcppCallResult> OcppMessageParser::parseCallResult(json& list) {
         if (!keyEnum.has_value()) {
             return std::nullopt;
         }
-        convertedPayload[keyEnum.value()] = (std::string)it.value();
+        convertedPayload[keyEnum.value()] = it.value();
     }
 
     return OcppCallResult{id, convertedPayload};

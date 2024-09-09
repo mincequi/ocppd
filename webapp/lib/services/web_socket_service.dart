@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:get/get.dart';
 import 'package:cbor/simple.dart';
+import 'package:webapp/models/ocpp_action.dart';
+import 'package:webapp/models/ocpp_configuration_key.dart';
 import 'package:webapp/models/property_key.dart';
 
 import '../controllers/charge_points_controller.dart';
@@ -31,15 +35,30 @@ class WebSocketService {
 
   void _onMessage(dynamic data) {
     final decodedData = cbor.decode(data);
+    if (decodedData is! Map) {
+      return;
+    }
 
-    if (decodedData is Map) {
-      decodedData.forEach((key, value) {
-        Map<PropertyKey, dynamic> properties = {};
-        value.forEach((k, v) {
-          properties[PropertyKey.values[int.parse(k)]] = v;
-        });
-        _chargePointsController.updateChargePointProperties(key, properties);
+    for (var kv in decodedData.entries) {
+      final chargePointId = kv.key;
+      if (kv.value is! Map) {
+        continue;
+      }
+
+      var properties = kv.value["properties"] ?? {};
+      Map<PropertyKey, dynamic> newProperties = {};
+      properties.forEach((k, v) {
+        newProperties[PropertyKey.values[int.parse(k)]] = v;
       });
+      _chargePointsController.updateChargePointProperties(
+          chargePointId, newProperties);
+
+      var configuration = kv.value["configuration"] ?? {};
+      Map<OcppConfigurationKey, String> newConfiguration = {};
+      configuration.forEach((k, v) {
+        newConfiguration[OcppConfigurationKey.values[int.parse(k)]] = v;
+      });
+      //_chargePointsController.updateChargePointConfiguration(
     }
   }
 
@@ -47,6 +66,11 @@ class WebSocketService {
     _channel.sink.add(cbor.encode({
       id: {key.index.toString(): value}
     }));
+  }
+
+  void sendAction(OcppAction action,
+      {String? chargePointId, String? key, String? value}) {
+    _channel.sink.add(json.encode([action.name, chargePointId, key, value]));
   }
 
   void close() {

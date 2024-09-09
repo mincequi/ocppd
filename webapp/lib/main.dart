@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:webapp/ui/colors.dart';
+import 'package:webapp/ui/main_page.dart';
 
 import 'controllers/charge_points_controller.dart';
 import 'services/web_socket_service.dart';
@@ -21,6 +23,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Ohssippippi',
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData.dark(
+        useMaterial3: true,
+      ).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Palette.blue, brightness: Brightness.dark),
+        cardTheme: CardTheme(
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: Palette.blue.withAlpha(127), width: 0),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+      ),
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -37,10 +52,11 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        colorScheme: ColorScheme.fromSeed(seedColor: Palette.green),
         useMaterial3: true,
       ),
-      home: ChargePointsPage(),
+      //home: ChargePointsPage(),
+      home: MainPage(),
     );
   }
 }

@@ -1,20 +1,8 @@
 #pragma once
 
-namespace ocpp {
+namespace ocpp::types {
 
-enum class OcppActionType {
-    // Core Profile
-    Authorize,
-    BootNotification,
-    DataTransfer,
-    DiagnosticsStatusNotification,
-    FirmwareStatusNotification,
-    Heartbeat,
-    MeterValues,
-    StartTransaction,
-    StatusNotification,
-    StopTransaction,
-
+enum class OcppActionCentralSystem {
     // Firmware Management Profile
     GetDiagnostics,
     UpdateFirmware,
@@ -46,5 +34,4 @@ enum class OcppActionType {
     UnlockConnector
 };
 
-} // namespace ocpp
-
+} // namespace ocpp::types

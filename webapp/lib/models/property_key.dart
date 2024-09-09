@@ -4,6 +4,7 @@ enum PropertyKey {
   status,
   //location,
   power,
+  powerOffered,
   //energy,
   //current,
   //voltage,

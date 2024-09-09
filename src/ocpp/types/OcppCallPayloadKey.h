@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ocpp {
+namespace ocpp::types {
 
 enum class OcppCallPayloadKey {
     // BootNotification
@@ -141,4 +141,4 @@ enum class OcppCallPayloadKey {
     certificateTypeSign
 };
 
-} // namespace ocpp
+} // namespace ocpp::types

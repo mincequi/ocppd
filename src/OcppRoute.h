@@ -5,7 +5,8 @@
 #include <ocpp/OcppMessageParser.h>
 #include <ocpp/OcppCallResultGenerator.h>
 
-#include "ActionHandler.h"
+#include "CallHandler.h"
+#include "CallResultHandler.h"
 
 class ChargePointRepository;
 
@@ -18,6 +19,7 @@ private:
     crow::SimpleApp& _app;
     ChargePointRepository& _chargePoints;
     ocpp::OcppMessageParser _parser;
-    ActionHandler _handler;
+    CallHandler _callHandler;
+    CallResultHandler _callResultHandler;
     ocpp::OcppCallResultGenerator _generator;
 };
