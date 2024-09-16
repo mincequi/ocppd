@@ -26,7 +26,6 @@ add_executable(ocppd
   src/ApiClientRepository.cpp
   src/ApiRoute.h
   src/ApiRoute.cpp
-  src/CallHandler.cpp
   src/ChargePointFactory.h
   src/ChargePointFactory.cpp
   src/ChargePointRepository.h
@@ -37,8 +36,6 @@ add_executable(ocppd
   src/OcppRoute.cpp
   src/Properties.h
   src/ResourceRoute.h src/ResourceRoute.cpp
-  src/utils/Overload.h
-  src/CallResultHandler.h src/CallResultHandler.cpp
   src/ConfigurationRepository.h src/ConfigurationRepository.cpp
 )
 

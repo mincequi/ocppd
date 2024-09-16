@@ -12,6 +12,7 @@ cmrc_add_resource_library(webapp WHENCE build/web
   build/web/assets/AssetManifest.json
   build/web/assets/FontManifest.json
   build/web/assets/fonts/MaterialIcons-Regular.otf
+  build/web/assets/packages/geekyants_flutter_gauges/assets/fonts/Roboto-Regular.ttf
   build/web/icons/Icon-192.png
 )
 

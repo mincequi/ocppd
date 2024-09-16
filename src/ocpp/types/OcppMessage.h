@@ -2,16 +2,14 @@
 
 #include <variant>
 
-#include <ocpp/OcppCall.h>
-#include <ocpp/OcppCallResult.h>
-#include <ocpp/calls/OcppMeterValues.h>
+#include <ocpp/confs/OcppConfBase.h>
+#include <ocpp/reqs/OcppReqBase.h>
 #include <ocpp/types/OcppActionChargePoint.h>
 
 namespace ocpp::types {
 
-using OcppMessage = std::variant<OcppCall<types::OcppActionChargePoint>,
-                                 OcppCallResult,
-                                 calls::OcppMeterValues,
+using OcppMessage = std::variant<reqs::OcppReqBase<types::OcppActionChargePoint>,
+                                 confs::OcppConfBase,
                                  std::nullopt_t>;
 
 }

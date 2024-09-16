@@ -4,7 +4,7 @@
 #include <magic_enum.hpp>
 #include <rpp/observers/observer.hpp>
 
-#include <ocpp/OcppCall.h>
+#include <ocpp/reqs/OcppReqBase.h>
 #include <ocpp/types/OcppActionCentralSystem.h>
 
 using namespace ocpp;
@@ -42,6 +42,18 @@ bool ChargePointRepository::removeByIp(crow::websocket::connection* conn) {
     return true;
 }
 
+ChargePoint* ChargePointRepository::byConn(crow::websocket::connection* conn) const {
+    auto it = std::find_if(_chargePoints.begin(), _chargePoints.end(), [&](const ChargePoint& cp) {
+        return cp._connection == conn;
+    });
+
+    if (it != _chargePoints.end()) {
+        return const_cast<ChargePoint*>(&(*it));
+    }
+
+    return nullptr;
+}
+
 void ChargePointRepository::setPropertiesByIp(crow::websocket::connection* conn,
                                               const Properties& properties) {
     {
@@ -58,7 +70,7 @@ void ChargePointRepository::setPropertiesByIp(crow::websocket::connection* conn,
 
     // If status was updated, start or stop the timer
     if (properties.contains(PropertyKey::status)) {
-        if (std::get<OcppCallStatus>(properties.at(PropertyKey::status)) == OcppCallStatus::Charging) {
+        if (std::get<OcppChargePointStatus>(properties.at(PropertyKey::status)) == OcppChargePointStatus::Charging) {
             startTimer();
         } else {
             stopTimer();
@@ -92,7 +104,7 @@ rpp::dynamic_observable<std::map<std::string, Properties>> ChargePointRepository
     return _propertiesSubject.get_observable();
 }
 
-void ChargePointRepository::setConfigurationByIp(crow::websocket::connection* conn, const OcppConfiguration& config) {
+void ChargePointRepository::setConfigurationByIp(crow::websocket::connection* conn, const ConfigurationKeys& config) {
     std::lock_guard<std::mutex> _(_mutex);
     auto it = std::find_if(_chargePoints.begin(), _chargePoints.end(), [&](const ChargePoint& cp) {
         return cp._connection == conn;
@@ -103,16 +115,16 @@ void ChargePointRepository::setConfigurationByIp(crow::websocket::connection* co
     }
 }
 
-std::map<std::string, OcppConfiguration> ChargePointRepository::configurations() {
+std::map<std::string, ConfigurationKeys> ChargePointRepository::configurations() {
     std::lock_guard<std::mutex> _(_mutex);
-    std::map<std::string, OcppConfiguration> configs;
+    std::map<std::string, ConfigurationKeys> configs;
     for (const auto& cp : _chargePoints) {
         configs[cp._id] = cp.configuration();
     }
     return configs;
 }
 
-rpp::dynamic_observable<std::map<std::string, OcppConfiguration>> ChargePointRepository::configurationObservable() {
+rpp::dynamic_observable<std::map<std::string, ConfigurationKeys>> ChargePointRepository::configurationObservable() {
     return _configurationsSubject.get_observable();
 }
 
@@ -120,12 +132,12 @@ void ChargePointRepository::triggerMeterValues() {
     std::lock_guard<std::mutex> _(_mutex);
     static int _transactionId = 0;
     for (auto& cp : _chargePoints) {
-        OcppCall<OcppActionCentralSystem> call {
+        reqs::OcppReqBase<OcppActionCentralSystem> call {
             OcppMessageType::Call,
             "TriggerMessage " + std::to_string(++_transactionId),
             OcppActionCentralSystem::TriggerMessage,
-            { { OcppCallPayloadKey::requestedMessage, "MeterValues" },
-                { OcppCallPayloadKey::connectorId, 1 }
+            { { OcppReqPayloadKey::requestedMessage, "MeterValues" },
+                { OcppReqPayloadKey::connectorId, 1 }
             }
         };
         cp._connection->send_text(call.toBuffer());
@@ -151,7 +163,7 @@ void ChargePointRepository::stopTimer() {
         std::lock_guard<std::mutex> _(_mutex);
         for (const auto& cp : _chargePoints) {
             if (cp.properties().contains(PropertyKey::status) &&
-                std::get<OcppCallStatus>(cp.properties().at(PropertyKey::status)) == OcppCallStatus::Charging) {
+                std::get<OcppChargePointStatus>(cp.properties().at(PropertyKey::status)) == OcppChargePointStatus::Charging) {
                 isAnyChargePointCharging = true;
                 break;
             }

@@ -8,6 +8,7 @@ import 'package:webapp/models/ocpp_configuration_key.dart';
 import 'package:webapp/models/property_key.dart';
 
 import '../controllers/charge_points_controller.dart';
+import '../controllers/configuration_controller.dart';
 
 class WebSocketService {
   //final _host = html.window.location.hostname;
@@ -16,8 +17,8 @@ class WebSocketService {
   final _port = 8030;
 
   late final WebSocketChannel _channel;
-  final ChargePointsController _chargePointsController =
-      Get.find<ChargePointsController>();
+  final ChargePointsController _chargePointsController = Get.find();
+  final ConfigurationController _configController = Get.find();
 
   WebSocketService() {
     _connect();
@@ -54,10 +55,11 @@ class WebSocketService {
           chargePointId, newProperties);
 
       var configuration = kv.value["configuration"] ?? {};
-      Map<OcppConfigurationKey, String> newConfiguration = {};
+      Map<OcppConfigurationKey, dynamic> newConfiguration = {};
       configuration.forEach((k, v) {
         newConfiguration[OcppConfigurationKey.values[int.parse(k)]] = v;
       });
+      _configController.updateConfiguration(newConfiguration);
       //_chargePointsController.updateChargePointConfiguration(
     }
   }

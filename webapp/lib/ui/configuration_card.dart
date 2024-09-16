@@ -12,17 +12,16 @@ class ConfigurationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        child: ListTile(
-          title: Text(config.key),
-          subtitle: TextField(
-            controller: TextEditingController(text: config.value),
-            decoration: InputDecoration(labelText: 'Value'),
-            onChanged: onChanged,
-          ),
-        ),
-      ),
-    );
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Text(config.key),
+            TextField(
+              controller: TextEditingController(text: config.value),
+              //decoration: InputDecoration(labelText: 'Value'),
+              onChanged: onChanged,
+            )
+          ],
+        ));
   }
 }

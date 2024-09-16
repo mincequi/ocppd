@@ -32,8 +32,11 @@ void ApiClientRepository::send(const std::map<std::string, T>& cps, crow::websoc
                     using U = std::decay_t<decltype(arg)>;
                     j[cp.first]["properties"][std::to_string(magic_enum::enum_integer(kv.first))] = arg;
                 }, kv.second);
-            } else if constexpr (std::is_same_v<T, OcppConfiguration>) {
-                j[cp.first]["configuration"][std::to_string(magic_enum::enum_integer(kv.first))] = kv.second;
+            } else if constexpr (std::is_same_v<T, ConfigurationKeys>) {
+                std::visit([&](auto&& arg) {
+                    using U = std::decay_t<decltype(arg)>;
+                    j[cp.first]["configuration"][std::to_string(magic_enum::enum_integer(kv.first))] = arg;
+                }, kv.second);
             }
         }
     }
@@ -50,4 +53,4 @@ void ApiClientRepository::send(const std::map<std::string, T>& cps, crow::websoc
 
 // explicit instantiation
 template void ApiClientRepository::send<Properties>(const std::map<std::string, Properties>&, crow::websocket::connection*);
-template void ApiClientRepository::send<OcppConfiguration>(const std::map<std::string, OcppConfiguration>&, crow::websocket::connection*);
+template void ApiClientRepository::send<ConfigurationKeys>(const std::map<std::string, ConfigurationKeys>&, crow::websocket::connection*);

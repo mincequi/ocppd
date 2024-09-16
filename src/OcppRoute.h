@@ -2,11 +2,10 @@
 
 #include <crow/app.h>
 
-#include <ocpp/OcppMessageParser.h>
-#include <ocpp/OcppCallResultGenerator.h>
-
-#include "CallHandler.h"
-#include "CallResultHandler.h"
+#include <ocpp/OcppConfFactory.h>
+#include <ocpp/OcppConfHandler.h>
+#include <ocpp/OcppReqHandler.h>
+#include <ocpp/OcppService.h>
 
 class ChargePointRepository;
 
@@ -15,11 +14,13 @@ public:
     OcppRoute(crow::SimpleApp& app,
               ChargePointRepository& chargePoints);
 
-private:
+private:    
     crow::SimpleApp& _app;
     ChargePointRepository& _chargePoints;
-    ocpp::OcppMessageParser _parser;
-    CallHandler _callHandler;
-    CallResultHandler _callResultHandler;
-    ocpp::OcppCallResultGenerator _generator;
+    ocpp::OcppConfFactory _confFactory;
+    ocpp::OcppConfHandler _confHandler;
+    ocpp::OcppReqHandler _reqHandler;
+    ocpp::OcppService _service;
+
+    std::mutex _mutex;
 };

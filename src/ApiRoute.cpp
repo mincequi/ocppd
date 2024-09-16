@@ -20,6 +20,7 @@ ApiRoute::ApiRoute(crow::SimpleApp& app,
             info << conn.get_remote_ip() << "> new client";
             _apiClients.add(&conn);
             _apiClients.send(_chargePoints.chargePoints(), &conn);
+            _apiClients.send(_chargePoints.configurations(), &conn);
         })
         .onclose([&](crow::websocket::connection& conn, const std::string& reason, uint16_t) {
             info << "client closed: " << reason;
@@ -42,7 +43,7 @@ ApiRoute::ApiRoute(crow::SimpleApp& app,
     _chargePoints.propertiesObservable().subscribe([&](const std::map<std::string, Properties>& properties) {
         _apiClients.send(properties);
     });
-    _chargePoints.configurationObservable().subscribe([&](const std::map<std::string, OcppConfiguration>& configuration) {
+    _chargePoints.configurationObservable().subscribe([&](const std::map<std::string, ConfigurationKeys>& configuration) {
         _apiClients.send(configuration);
     });
 }
@@ -66,7 +67,7 @@ void ApiRoute::onAction(const std::string& data) {
         _chargePoints.triggerMeterValues();
         break;
     case OcppActionCentralSystem::ChangeConfiguration: {
-        auto key = magic_enum::enum_cast<OcppConfigurationKey>(j[2]);
+        auto key = magic_enum::enum_cast<ConfigurationKey>(j[2]);
         if (!key.has_value()) {
             warning << "api> unknown configuration key: " << j[2];
             return;

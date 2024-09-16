@@ -15,6 +15,10 @@ public:
 
     double value;
     OcppMeasurand measurand = OcppMeasurand::EnergyActiveImportRegister;
+
+private:
+    static std::optional<OcppMeasurand> measurandFromJson(const nlohmann::json& json);
+
 };
 
 } // namespace ocpp::types

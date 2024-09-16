@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:webapp/controllers/configuration_controller.dart';
 import 'package:webapp/ui/colors.dart';
 import 'package:webapp/ui/main_page.dart';
 
@@ -10,6 +11,7 @@ import 'ui/charge_points_page.dart';
 void main() {
   // Initialize controllers and services
   Get.put(ChargePointsController(), permanent: true);
+  Get.put(ConfigurationController(), permanent: true);
   Get.put(WebSocketService(), permanent: true);
 
   runApp(const MyApp());

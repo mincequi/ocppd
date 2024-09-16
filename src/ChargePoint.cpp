@@ -2,7 +2,7 @@
 
 #include <crow/websocket.h>
 
-#include <ocpp/OcppCall.h>
+#include <ocpp/reqs/OcppReqBase.h>
 #include <ocpp/types/OcppActionCentralSystem.h>
 #include <ocpp/types/OcppChargingProfile.h>
 
@@ -14,6 +14,10 @@ using namespace ocpp::types;
 ChargePoint::ChargePoint(crow::websocket::connection* connection, const std::string& id, const std::string& name)
     : _connection(connection), _id(id) {
     _properties[PropertyKey::name] = name;
+}
+
+void ChargePoint::send(const std::string& message) {
+    _connection->send_text(message);
 }
 
 bool ChargePoint::operator==(const ChargePoint& cp) const {
@@ -39,11 +43,11 @@ void ChargePoint::setProperties(const Properties& properties) {
     }
 }
 
-const OcppConfiguration& ChargePoint::configuration() const {
+const ConfigurationKeys& ChargePoint::configuration() const {
     return _configuration;
 }
 
-void ChargePoint::setConfiguration(const OcppConfiguration& configuration) {
+void ChargePoint::setConfiguration(const ConfigurationKeys& configuration) {
     for (const auto& [key, value] : configuration) {
         _configuration[key] = value;
     }
@@ -83,13 +87,13 @@ void ChargePoint::sendPowerOffered(int powerOffered) {
     return _connection->send_text(remoteStartTransaction.dump());
 
 
-    OcppCall<OcppActionCentralSystem> call {
+    reqs::OcppReqBase<OcppActionCentralSystem> call {
         OcppMessageType::Call,
         "RemoteStartTransaction " + std::to_string(++_powerOffered),
         OcppActionCentralSystem::RemoteStartTransaction,
-        { { OcppCallPayloadKey::idTag, "user" },
-          { OcppCallPayloadKey::connectorId, 1 },
-         { OcppCallPayloadKey::chargingProfile, chargingProfile }
+        { { OcppReqPayloadKey::idTag, "user" },
+          { OcppReqPayloadKey::connectorId, 1 },
+         { OcppReqPayloadKey::chargingProfile, chargingProfile }
         }
     };
 

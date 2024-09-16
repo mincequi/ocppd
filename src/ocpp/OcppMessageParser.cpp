@@ -3,7 +3,7 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
-#include "calls/OcppMeterValues.h"
+#include "reqs/MeterValues.h"
 #include "types/OcppActionChargePoint.h"
 #include "types/OcppMessageType.h"
 
@@ -12,21 +12,20 @@ using namespace ocpp::types;
 
 namespace ocpp {
 
-using namespace calls;
+using namespace reqs;
 using namespace types;
 
 OcppMessageParser::OcppMessageParser() {
 }
 
 OcppMessage OcppMessageParser::parse(const std::string& message) {
-    _lastError.clear();
     json data = json::parse(message);
     if (!data.is_array()) {
+        warn("invalid json: " + message);
         return std::nullopt;
     }
 
     const auto call = parseCall(data);
-    // Check if call holds alternative nullptr_t
     if (!std::holds_alternative<std::nullopt_t>(call)) {
         return call;
     }
@@ -36,20 +35,14 @@ OcppMessage OcppMessageParser::parse(const std::string& message) {
         return callResult.value();
     }
 
-    _lastError = "invalid message format";
+    warn("invalid message: " + message);
     return std::nullopt;
-}
-
-const std::string& OcppMessageParser::lastError() const {
-    return _lastError;
-}
-
-void OcppMessageParser::registerAction(OcppActionChargePoint action, ActionCallback callback) {
-    _actions[action] = callback;
 }
 
 OcppMessage OcppMessageParser::parseCall(json& array) {
     if (array.size() != 4) {
+        // do not warn here, since this might be a result
+        //warn("invalid call array size: " + array.dump());
         return std::nullopt;
     }
 
@@ -57,45 +50,36 @@ OcppMessage OcppMessageParser::parseCall(json& array) {
         !array[1].is_string() ||
         !array[2].is_string() ||
         !array[3].is_object()) {
+        warn("invalid call array types: " + array.dump());
         return std::nullopt;
     }
 
     const auto type = magic_enum::enum_cast<OcppMessageType>(array[0].get<int>());
     if (!type.has_value()) {
+        warn("invalid call type: " + array.dump());
         return std::nullopt;
     }
     const auto id = array[1].get<std::string>();
     const auto action = magic_enum::enum_cast<OcppActionChargePoint>((std::string)array[2]);
     if (!action.has_value()) {
+        warn("invalid call action: " + array.dump());
         return std::nullopt;
     }
 
-    OcppCallPayload convertedPayload;
+    OcppReqPayload convertedPayload;
     for (const auto& it : array[3].items()) {
-        const auto keyEnum = magic_enum::enum_cast<OcppCallPayloadKey>(it.key());
+        const auto keyEnum = magic_enum::enum_cast<OcppReqPayloadKey>(it.key());
         if (!keyEnum.has_value()) {
-            return std::nullopt;
+            warn("invalid call payload key: " + it.key());
+            continue;
         }
         convertedPayload[keyEnum.value()] = it.value();
     }
 
-    auto baseCall = OcppCall<OcppActionChargePoint>{type.value(), id, action.value(), convertedPayload};
-    switch (action.value()) {
-    case OcppActionChargePoint::MeterValues: {
-        auto call = OcppMeterValues::fromCall(baseCall);
-        if (call.has_value()) {
-            return call.value();
-        }
-        break;
-    }
-    default:
-        break;
-    }
-
-    return baseCall;
+    return OcppReqBase<OcppActionChargePoint>{type.value(), id, action.value(), convertedPayload};
 }
 
-std::optional<OcppCallResult> OcppMessageParser::parseCallResult(json& list) {
+std::optional<confs::OcppConfBase> OcppMessageParser::parseCallResult(json& list) {
     if (list.size() != 3) {
         return std::nullopt;
     }
@@ -110,16 +94,16 @@ std::optional<OcppCallResult> OcppMessageParser::parseCallResult(json& list) {
         return std::nullopt;
     }
     const auto id = list[1].get<std::string>();
-    OcppCallResult::Payload convertedPayload;
+    confs::OcppConfBase::Payload convertedPayload;
     for (const auto& it : list[2].items()) {
-        const auto keyEnum = magic_enum::enum_cast<OcppCallResultPayloadKey>(it.key());
+        const auto keyEnum = magic_enum::enum_cast<OcppConfPayloadKey>(it.key());
         if (!keyEnum.has_value()) {
             return std::nullopt;
         }
         convertedPayload[keyEnum.value()] = it.value();
     }
 
-    return OcppCallResult{id, convertedPayload};
+    return confs::OcppConfBase{id, convertedPayload};
 }
 
 } // namespace ocpp

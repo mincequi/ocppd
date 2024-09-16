@@ -2,6 +2,7 @@
 
 namespace ocpp::types {
 
+// Keep this in sync with dart enum OcppMeasurand
 enum class OcppMeasurand {
     EnergyActiveImportRegister,     // Wh
     EnergyActiveExportRegister,     // Wh
@@ -15,7 +16,9 @@ enum class OcppMeasurand {
     CurrentImport,                  // A
     CurrentExport,                  // A
     CurrentOffered,                 // A
-    Voltage,                        // V
+    VoltageL1,                      // V
+    VoltageL2,                      // V
+    VoltageL3,                      // V
     Frequency,                      // Hz
     SoC,                            // %
     Temperature                     // °C

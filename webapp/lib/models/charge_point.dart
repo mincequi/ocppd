@@ -7,7 +7,6 @@ import 'property_key.dart';
 class ChargePoint {
   final String id;
   var properties = <PropertyKey, dynamic>{};
-  var configuration = <OcppConfigurationKey, String>{}.obs;
 
   String get name => properties[PropertyKey.name] ?? id;
   OcppChargePointStatus? get status =>

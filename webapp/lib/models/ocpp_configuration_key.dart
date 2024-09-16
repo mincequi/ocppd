@@ -24,6 +24,7 @@ enum OcppConfigurationKey {
   TransactionMessageAttempts,
   TransactionMessageRetryInterval,
   UnlockConnectorOnEVSideDisconnect,
+  WebSocketPingInterval,
 
   // Local Authorization List Management
   LocalAuthListEnabled,
@@ -59,5 +60,4 @@ enum OcppConfigurationKey {
 
   // Diagnostics
   ConnectionTimeout,
-  WebSocketPingInterval
 }

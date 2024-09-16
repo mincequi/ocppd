@@ -1,7 +1,7 @@
 #include <catch2/catch_all.hpp>
 
-#include <ocpp/OcppCall.h>
 #include <ocpp/OcppMessageParser.h>
+#include <ocpp/reqs/OcppReqBase.h>
 #include <ocpp/types/OcppActionChargePoint.h>
 
 const std::string message = R"([2,"531531554","MeterValues",
@@ -52,5 +52,5 @@ using namespace ocpp;
 TEST_CASE("Simple arithmetic") {
     OcppMessageParser parser;
     auto result = parser.parse(message);
-    REQUIRE(std::holds_alternative<OcppCall<types::OcppActionChargePoint>>(result));
+    REQUIRE(std::holds_alternative<reqs::OcppReqBase<types::OcppActionChargePoint>>(result));
 }
