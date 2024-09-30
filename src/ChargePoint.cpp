@@ -88,7 +88,6 @@ void ChargePoint::sendPowerOffered(int powerOffered) {
 
 
     reqs::OcppReqBase<OcppActionCentralSystem> call {
-        OcppMessageType::Call,
         "RemoteStartTransaction " + std::to_string(++_powerOffered),
         OcppActionCentralSystem::RemoteStartTransaction,
         { { OcppReqPayloadKey::idTag, "user" },

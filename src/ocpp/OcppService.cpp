@@ -6,6 +6,7 @@
 
 #include <ocpp/OcppConfFactory.h>
 #include <ocpp/OcppConfHandler.h>
+#include <ocpp/OcppMessageHandler.h>
 #include <ocpp/OcppReqHandler.h>
 #include <ocpp/utils/overload.h>
 
@@ -50,27 +51,30 @@ void OcppService::process(const std::string& data, WebSocketConnection& connecti
             // Do not log anything, since the parser already logs the error
         },
         [&](OcppConfBase& result) {
+            auto req = messageHandler.take(std::stoi(result.id));
+            if (!req) {
+                warn("no request found for id: " + result.id);
+            }
             for (const auto& [key, value] : result.payload) {
                 auto parseResult = _confParser.parse(key, value);
                 if (std::holds_alternative<std::nullopt_t>(parseResult)) {
                     warn("unhandled conf key: " + std::string(magic_enum::enum_name(key)) + " with value: " + value.dump());
                     continue;
                 }
-                _confHandler.process(parseResult, connection);
+                _confHandler.process(parseResult, connection, req);
             }
         },
         [&](reqs::OcppReqBase<OcppActionChargePoint>& base) {
             auto parseResult = _reqParser.parse(std::move(base));
             _reqHandler.process(parseResult, connection);
+
             auto conf = _confFactory.build(parseResult, connection);
             if (conf.id.empty()) {
                 warn("empty id");
                 return;
             }
 
-            auto buf = conf.toBuffer();
-            info("sending conf: " + buf);
-            connection.send(buf);
+            connection.conf(conf);
         },
     }, msg);
 }

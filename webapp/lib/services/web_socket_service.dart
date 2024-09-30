@@ -8,7 +8,8 @@ import 'package:webapp/models/ocpp_configuration_key.dart';
 import 'package:webapp/models/property_key.dart';
 
 import '../controllers/charge_points_controller.dart';
-import '../controllers/configuration_controller.dart';
+import '../controllers/configurations_controller.dart';
+import '../models/ocpp_measurand.dart';
 
 class WebSocketService {
   //final _host = html.window.location.hostname;
@@ -18,7 +19,7 @@ class WebSocketService {
 
   late final WebSocketChannel _channel;
   final ChargePointsController _chargePointsController = Get.find();
-  final ConfigurationController _configController = Get.find();
+  final ConfigurationsController _configController = Get.find();
 
   WebSocketService() {
     _connect();
@@ -41,32 +42,46 @@ class WebSocketService {
     }
 
     for (var kv in decodedData.entries) {
-      final chargePointId = kv.key;
+      final id = kv.key;
       if (kv.value is! Map) {
         continue;
       }
 
-      var properties = kv.value["properties"] ?? {};
+      var map = kv.value as Map;
+      if (map.isEmpty) {
+        _chargePointsController.removeChargePoint(id);
+        _configController.removeConfiguration(id);
+        continue;
+      }
+
+      var properties = map["properties"] ?? {};
       Map<PropertyKey, dynamic> newProperties = {};
       properties.forEach((k, v) {
         newProperties[PropertyKey.values[int.parse(k)]] = v;
       });
-      _chargePointsController.updateChargePointProperties(
-          chargePointId, newProperties);
+      _chargePointsController.updateChargePointProperties(id, newProperties);
 
-      var configuration = kv.value["configuration"] ?? {};
+      var configuration = map["configuration"] ?? {};
       Map<OcppConfigurationKey, dynamic> newConfiguration = {};
       configuration.forEach((k, v) {
         newConfiguration[OcppConfigurationKey.values[int.parse(k)]] = v;
       });
-      _configController.updateConfiguration(newConfiguration);
-      //_chargePointsController.updateChargePointConfiguration(
+      _configController.updateConfiguration(id, newConfiguration);
     }
   }
 
   void sendMessage(String id, PropertyKey key, dynamic value) {
     _channel.sink.add(cbor.encode({
       id: {key.index.toString(): value}
+    }));
+  }
+
+  void sendOcppConfiguration(
+      String id, OcppConfigurationKey groupKey, List<int> selectedMeasurands) {
+    _channel.sink.add(cbor.encode({
+      id: {
+        "configuration": {groupKey.index.toString(): selectedMeasurands}
+      }
     }));
   }
 

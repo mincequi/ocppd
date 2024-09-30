@@ -1,6 +1,3 @@
-import 'package:get/get.dart';
-import 'package:webapp/models/ocpp_configuration_key.dart';
-
 import 'ocpp_charge_point_status.dart';
 import 'property_key.dart';
 

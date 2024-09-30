@@ -10,7 +10,8 @@ enum class OcppChargePointStatus {
     SuspendedEVSE,
     Finishing,
     Reserved,
-    Unavailable
+    Unavailable,
+    Faulted
 };
 
 } // namespace ocpp::types

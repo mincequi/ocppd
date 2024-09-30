@@ -11,7 +11,7 @@ class ChargePointCard extends StatelessWidget {
   final _webSocketService = Get.find<WebSocketService>();
 
   final Rx<ChargePoint> chargePoint;
-  var _editedName;
+  String _editedName;
 
   final RxnInt _powerOffered = RxnInt(null);
 
@@ -71,24 +71,27 @@ class ChargePointCard extends StatelessWidget {
                           },
                         ),
                         actions: [
+                          // Restore button
                           TextButton(
                             onPressed: () {
                               _editedName = chargePoint.value.id;
                               _webSocketService.sendMessage(
                                   chargePoint.value.id,
                                   PropertyKey.name,
-                                  chargePoint.value.id);
+                                  _editedName);
                               Get.back();
                             },
                             // Add reset icon
-                            child: Icon(Icons.restore),
+                            child: const Icon(Icons.restore),
                           ),
+                          // Close button
                           TextButton(
                             onPressed: () {
                               Get.back();
                             },
-                            child: Icon(Icons.close),
+                            child: const Icon(Icons.close),
                           ),
+                          // Save button
                           TextButton(
                             onPressed: () {
                               _webSocketService.sendMessage(
@@ -97,7 +100,7 @@ class ChargePointCard extends StatelessWidget {
                                   _editedName);
                               Get.back();
                             },
-                            child: Icon(Icons.save),
+                            child: const Icon(Icons.save),
                           ),
                         ],
                       );

@@ -23,7 +23,6 @@ add_library(ocpp STATIC
   types/OcppChargingProfile.h
   types/OcppChargingProfile.cpp
   types/ConfigurationKeys.h
-  confs/UnknownKeys.h
   types/OcppMeasurand.h
   types/OcppMessage.h
   types/OcppMessageType.h
@@ -49,9 +48,12 @@ add_library(ocpp STATIC
   reqs/OcppReqBase.cpp
   types/OcppChargePointErrorCode.h
   types/OcppChargePointStatus.h
-  confs/UnknownKeys.h
+  types/UnknownKeys.h
   types/OcppUpdateStatus.h
   types/ConfigurationValue.h
+  reqs/GetConfiguration.h reqs/GetConfiguration.cpp
+  WebSocketConnection.cpp
+  OcppMessageHandler.h OcppMessageHandler.cpp
 )
 
 target_include_directories(ocpp

@@ -22,14 +22,15 @@ OcppRoute::OcppRoute(crow::SimpleApp& app,
         std::transform(id.begin(), id.end(), id.begin(), ::tolower);
         if (_chargePoints.add({cp._connection, id, id})) {
             info << "new ChargePoint: " << id;
-            reqs::OcppReqBase<OcppActionCentralSystem> payload {
-                OcppMessageType::Call,
+            /*reqs::OcppReqBase<OcppActionCentralSystem> getConfiguration {
                 std::to_string(rand()),
                 OcppActionCentralSystem::GetConfiguration,
                 {
                     { OcppReqPayloadKey::key, "GetConfigurationMaxKeys" }
                 }};
-            cp.send(payload.toBuffer());
+            cp.send(getConfiguration.toBuffer());
+            */
+            cp.req(OcppActionCentralSystem::GetConfiguration, { { OcppReqPayloadKey::key, "GetConfigurationMaxKeys" } });
         }
     }).on<reqs::StatusNotification>([this](const reqs::StatusNotification& req, WebSocketConnection& conn) {
         const auto& cp = static_cast<ChargePoint&>(conn);
@@ -72,7 +73,7 @@ OcppRoute::OcppRoute(crow::SimpleApp& app,
         _chargePoints.setPropertiesByIp(cp._connection, properties);
     });
 
-    _confHandler.on<ConfigurationKeys>([this](const ConfigurationKeys& conf, WebSocketConnection& conn) {
+    _confHandler.on<ConfigurationKeys>([this](const ConfigurationKeys& conf, WebSocketConnection& conn, const std::optional<reqs::OcppReqBase<types::OcppActionCentralSystem>>& req) {
         const auto& cp = static_cast<ChargePoint&>(conn);
         _chargePoints.setConfigurationByIp(cp._connection, conf);
     });

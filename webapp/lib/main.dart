@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:webapp/controllers/configuration_controller.dart';
+import 'package:webapp/controllers/configurations_controller.dart';
 import 'package:webapp/ui/colors.dart';
 import 'package:webapp/ui/main_page.dart';
 
 import 'controllers/charge_points_controller.dart';
 import 'services/web_socket_service.dart';
-import 'ui/charge_points_page.dart';
 
 void main() {
   // Initialize controllers and services
   Get.put(ChargePointsController(), permanent: true);
-  Get.put(ConfigurationController(), permanent: true);
+  Get.put(ConfigurationsController(), permanent: true);
   Get.put(WebSocketService(), permanent: true);
 
   runApp(const MyApp());
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Ohssippippi',
+      title: 'OCPP Central',
       themeMode: ThemeMode.dark,
       darkTheme: ThemeData.dark(
         useMaterial3: true,

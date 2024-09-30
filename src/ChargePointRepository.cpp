@@ -115,6 +115,17 @@ void ChargePointRepository::setConfigurationByIp(crow::websocket::connection* co
     }
 }
 
+void ChargePointRepository::setConfigurationById(const std::string& id, const ConfigurationKeys& config) {
+    std::lock_guard<std::mutex> _(_mutex);
+    auto it = std::find_if(_chargePoints.begin(), _chargePoints.end(), [&](const ChargePoint& cp) {
+        return cp._id == id;
+    });
+
+    if (it != _chargePoints.end()) {
+        it->setConfiguration(config);
+    }
+}
+
 std::map<std::string, ConfigurationKeys> ChargePointRepository::configurations() {
     std::lock_guard<std::mutex> _(_mutex);
     std::map<std::string, ConfigurationKeys> configs;
@@ -130,17 +141,18 @@ rpp::dynamic_observable<std::map<std::string, ConfigurationKeys>> ChargePointRep
 
 void ChargePointRepository::triggerMeterValues() {
     std::lock_guard<std::mutex> _(_mutex);
-    static int _transactionId = 0;
     for (auto& cp : _chargePoints) {
-        reqs::OcppReqBase<OcppActionCentralSystem> call {
-            OcppMessageType::Call,
-            "TriggerMessage " + std::to_string(++_transactionId),
-            OcppActionCentralSystem::TriggerMessage,
-            { { OcppReqPayloadKey::requestedMessage, "MeterValues" },
-                { OcppReqPayloadKey::connectorId, 1 }
-            }
-        };
-        cp._connection->send_text(call.toBuffer());
+        //reqs::OcppReqBase<OcppActionCentralSystem> call {
+        //    "TriggerMessage " + std::to_string(++_transactionId),
+        //    OcppActionCentralSystem::TriggerMessage,
+        //    { { OcppReqPayloadKey::requestedMessage, "MeterValues" },
+        //        { OcppReqPayloadKey::connectorId, 1 }
+        //    }
+        //};
+        //cp._connection->send_text(call.toBuffer());
+        cp.req(OcppActionCentralSystem::TriggerMessage, {
+            { OcppReqPayloadKey::requestedMessage, "MeterValues" },
+            { OcppReqPayloadKey::connectorId, 1 } });
     }
 }
 
@@ -149,7 +161,7 @@ void ChargePointRepository::startTimer() {
         _isTimerRunning = true;
         _timerThread = std::thread([&]() {
             while (_isTimerRunning) {
-                triggerMeterValues();
+                //triggerMeterValues();
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }
         });

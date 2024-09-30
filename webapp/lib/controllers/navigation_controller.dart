@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../models/ocpp_action.dart';
 import '../services/web_socket_service.dart';
 import '../ui/configuration_page.dart';
-import '../ui/charge_points_page_new.dart';
+import '../ui/charge_points_page.dart';
 
 class NavigationController extends GetxController {
   var webSocketService = Get.find<WebSocketService>();
@@ -14,7 +14,7 @@ class NavigationController extends GetxController {
 
   // List of pages for each tab
   final List<Widget> pages = [
-    ChargePointsPageNew(),
+    ChargePointsPage(),
     ConfigurationPage(),
   ];
 

@@ -6,17 +6,12 @@ class ChargePointsController extends GetxController {
   // Reactive list of Chargepoints
   RxList<Rx<ChargePoint>> chargePoints = <Rx<ChargePoint>>[].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   void updateChargePointProperties(
-      String chargePointId, Map<PropertyKey, dynamic> newProperties) {
-    final chargePoint = chargePoints
-        .firstWhere((cp) => cp.value.id == chargePointId, orElse: () {
+      String id, Map<PropertyKey, dynamic> newProperties) {
+    final chargePoint =
+        chargePoints.firstWhere((cp) => cp.value.id == id, orElse: () {
       var newCp = ChargePoint(
-        id: chargePointId,
+        id: id,
       ).obs;
       chargePoints.add(newCp);
       return newCp;

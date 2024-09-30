@@ -41,7 +41,6 @@ void OcppReqHandler::process(reqs::OcppReq& ocppReq, WebSocketConnection& conn) 
 
 void OcppReqHandler::sendGetConfiguration(crow::websocket::connection& conn) {
     reqs::OcppReqBase<OcppActionCentralSystem> payload2 {
-                                               OcppMessageType::Call,
                                                "ChangeConfiguration " + std::to_string(++_transactionId),
                                                OcppActionCentralSystem::ChangeConfiguration,
                                                {
@@ -51,7 +50,6 @@ void OcppReqHandler::sendGetConfiguration(crow::websocket::connection& conn) {
     conn.send_text(payload2.toBuffer());
 
     reqs::OcppReqBase<OcppActionCentralSystem> payload3 {
-                                               OcppMessageType::Call,
                                                "ChangeConfiguration " + std::to_string(++_transactionId),
                                                OcppActionCentralSystem::ChangeConfiguration,
                                                {
@@ -61,7 +59,6 @@ void OcppReqHandler::sendGetConfiguration(crow::websocket::connection& conn) {
     conn.send_text(payload3.toBuffer());
 
     reqs::OcppReqBase<OcppActionCentralSystem> payload {
-        OcppMessageType::Call,
         "GetConfiguration " + std::to_string(++_transactionId),
         OcppActionCentralSystem::GetConfiguration,
         {

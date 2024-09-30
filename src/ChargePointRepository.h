@@ -46,6 +46,7 @@ public:
 
     // ConfigurationKeys
     void setConfigurationByIp(crow::websocket::connection* conn, const ConfigurationKeys& config);
+    void setConfigurationById(const std::string& id, const ConfigurationKeys& config);
     Configurations configurations();
     rpp::dynamic_observable<Configurations> configurationObservable();
 

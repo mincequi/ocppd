@@ -4,10 +4,13 @@
 
 #include <ocpp/types/OcppActionCentralSystem.h>
 #include <ocpp/types/OcppActionChargePoint.h>
+#include <ocpp/types/OcppMessageType.h>
 
 using json = nlohmann::json;
 
 namespace ocpp::reqs {
+
+using namespace types;
 
 template<typename ActionType>
 std::string OcppReqBase<ActionType>::toBuffer() const {
@@ -15,10 +18,10 @@ std::string OcppReqBase<ActionType>::toBuffer() const {
     for (const auto& kv : payload) {
         convertedPayload[std::string(magic_enum::enum_name(kv.first))] = kv.second;
     }
-    return json({(int)type, id, std::string(magic_enum::enum_name(action)), convertedPayload}).dump();
+    return json({(int)OcppMessageType::Call, id, std::string(magic_enum::enum_name(action)), convertedPayload}).dump();
 }
 
-template class OcppReqBase<types::OcppActionCentralSystem>;
-template class OcppReqBase<types::OcppActionChargePoint>;
+template class OcppReqBase<OcppActionCentralSystem>;
+template class OcppReqBase<OcppActionChargePoint>;
 
 } // namespace ocpp::reqs
