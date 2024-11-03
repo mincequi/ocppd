@@ -115,14 +115,14 @@ void ChargePointRepository::setConfigurationByIp(crow::websocket::connection* co
     }
 }
 
-void ChargePointRepository::setConfigurationById(const std::string& id, const ConfigurationKeys& config) {
+void ChargePointRepository::req(const std::string& id, types::OcppActionCentralSystem action, const types::OcppReqPayload& payload) {
     std::lock_guard<std::mutex> _(_mutex);
     auto it = std::find_if(_chargePoints.begin(), _chargePoints.end(), [&](const ChargePoint& cp) {
         return cp._id == id;
     });
 
     if (it != _chargePoints.end()) {
-        it->setConfiguration(config);
+        it->req(action, payload);
     }
 }
 

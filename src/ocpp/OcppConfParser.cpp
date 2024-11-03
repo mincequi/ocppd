@@ -27,14 +27,14 @@ OcppConfParser::OcppConfParser() {
                 continue;
             }
 
-            const auto key = magic_enum::enum_cast<ConfigurationKey>(item["key"].get<std::string>());
+            const auto key = magic_enum::enum_cast<OcppConfigurationKey>(item["key"].get<std::string>());
             if (!key.has_value()) {
                 continue;
             }
 
             switch (key.value()) {
-            case ConfigurationKey::MeterValuesAlignedData:
-            case ConfigurationKey::MeterValuesSampledData:
+            case OcppConfigurationKey::MeterValuesAlignedData:
+            case OcppConfigurationKey::MeterValuesSampledData:
                 configuration[key.value()] = parseMeasurands(item["value"].get<std::string>());
                 break;
             default: {

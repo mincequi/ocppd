@@ -46,7 +46,7 @@ OcppConfBase OcppConfFactory::build(const reqs::OcppReq& req, WebSocketConnectio
                 warn("unhandled req type: " + std::string(magic_enum::enum_name(baseReq.action)));
                 break;
             }
-            return OcppConfBase{baseReq.id, payload};
+            return OcppConfBase{baseReq.transactionId, payload};
         }
     }, req);
 }

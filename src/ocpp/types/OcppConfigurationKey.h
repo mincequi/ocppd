@@ -2,7 +2,7 @@
 
 namespace ocpp::types {
 
-enum class ConfigurationKey {
+enum class OcppConfigurationKey {
     // Core Configuration Keys
     AllowOfflineTxForUnknownId,
     AuthorizationCacheEnabled,

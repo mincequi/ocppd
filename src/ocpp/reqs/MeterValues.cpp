@@ -14,7 +14,7 @@ std::optional<MeterValues> MeterValues::fromBase(const OcppReqBase<types::OcppAc
         return std::nullopt;
     }
 
-    MeterValues meterValues{call.id, call.action, call.payload};
+    MeterValues meterValues{call.transactionId, call.action, call.payload};
     for (const auto& it : call.payload.at(OcppReqPayloadKey::meterValue)) {
         auto meterValue = OcppMeterValue::fromJson(it);
         if (!meterValue.has_value()) {

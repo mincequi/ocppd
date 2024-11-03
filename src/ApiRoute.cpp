@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include <ocpp/types/OcppActionCentralSystem.h>
+#include <ocpp/types/OcppConfigurationKey.h>
 
 #include "ChargePointRepository.h"
 #include "utils/log.h"
@@ -69,7 +70,7 @@ void ApiRoute::onAction(const std::string& data) {
         _chargePoints.triggerMeterValues();
         break;
     case OcppActionCentralSystem::ChangeConfiguration: {
-        auto key = magic_enum::enum_cast<ConfigurationKey>(j[2]);
+        auto key = magic_enum::enum_cast<OcppConfigurationKey>(j[2]);
         if (!key.has_value()) {
             warning << "api> unknown configuration key: " << j[2];
             return;
@@ -140,11 +141,13 @@ void ApiRoute::onProperty(const json& j) {
 
 void ApiRoute::onOcppConfiguration(const std::string& id, const nlohmann::json& j) {
     for (const auto& confs : j.items()) {
-        const auto confKey = static_cast<ConfigurationKey>(std::stoi(confs.key()));
+        const auto confKey = static_cast<OcppConfigurationKey>(std::stoi(confs.key()));
         std::vector<OcppMeasurand> measurands;
         for (const auto& measurandItem: confs.value().items()) {
             measurands.push_back(static_cast<OcppMeasurand>(std::stoi(measurandItem.key())));
         }
-        _chargePoints.setConfigurationById(id, {{confKey, measurands}});
+        _chargePoints.req(id, OcppActionCentralSystem::ChangeConfiguration,
+                          {{ OcppReqPayloadKey::key, confKey },
+                           { OcppReqPayloadKey::value, measurands } });
     }
 }

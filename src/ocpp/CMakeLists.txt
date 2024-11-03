@@ -23,6 +23,7 @@ add_library(ocpp STATIC
   types/OcppChargingProfile.h
   types/OcppChargingProfile.cpp
   types/ConfigurationKeys.h
+  types/OcppConfigurationKey.h
   types/OcppMeasurand.h
   types/OcppMessage.h
   types/OcppMessageType.h
@@ -32,15 +33,17 @@ add_library(ocpp STATIC
   types/OcppSampledValue.cpp
   utils/chrono.h
   utils/chrono.cpp
-  types/ConfigurationKey.h
   OcppService.h
   OcppService.cpp
   confs/OcppConfField.h
-  OcppConfParser.h OcppConfParser.cpp
+  OcppConfParser.h
+  OcppConfParser.cpp
   Emitter.h
   Emitter.cpp
-  OcppReqParser.h OcppReqParser.cpp
-  reqs/BootNotification.h reqs/BootNotification.cpp
+  OcppReqParser.h
+  OcppReqParser.cpp
+  reqs/BootNotification.h
+  reqs/BootNotification.cpp
   reqs/OcppReq.h
   reqs/StatusNotification.h
   reqs/StatusNotification.cpp
@@ -51,9 +54,13 @@ add_library(ocpp STATIC
   types/UnknownKeys.h
   types/OcppUpdateStatus.h
   types/ConfigurationValue.h
-  reqs/GetConfiguration.h reqs/GetConfiguration.cpp
+  reqs/GetConfiguration.h
+  reqs/GetConfiguration.cpp
   WebSocketConnection.cpp
-  OcppMessageHandler.h OcppMessageHandler.cpp
+  OcppMessageHandler.h
+  OcppMessageHandler.cpp
+  reqs/ChangeConfiguration.h
+  reqs/ChangeConfiguration.cpp
 )
 
 target_include_directories(ocpp

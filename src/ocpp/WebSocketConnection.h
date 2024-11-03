@@ -14,8 +14,6 @@ public:
     void conf(const confs::OcppConfBase& confBase);
 
 private:
-    //friend class OcppService;
-
     virtual void send(const std::string& message) = 0;
 };
 

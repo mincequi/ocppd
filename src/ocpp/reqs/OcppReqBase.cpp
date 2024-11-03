@@ -18,7 +18,7 @@ std::string OcppReqBase<ActionType>::toBuffer() const {
     for (const auto& kv : payload) {
         convertedPayload[std::string(magic_enum::enum_name(kv.first))] = kv.second;
     }
-    return json({(int)OcppMessageType::Call, id, std::string(magic_enum::enum_name(action)), convertedPayload}).dump();
+    return json({(int)OcppMessageType::Call, transactionId, std::string(magic_enum::enum_name(action)), convertedPayload}).dump();
 }
 
 template class OcppReqBase<OcppActionCentralSystem>;

@@ -9,7 +9,7 @@ namespace ocpp::reqs {
 template<typename Action>
 class OcppReqBase {
 public:
-    const std::string id;
+    const std::string transactionId;
     const Action action;
     const types::OcppReqPayload payload;
 
